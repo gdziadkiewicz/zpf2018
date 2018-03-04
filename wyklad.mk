@@ -7,18 +7,19 @@ MATH=--mathjax #=$(MATHJAXURL)
 #MATH=--mathml
 PDOPTS=$(MATH) #--self-contained
 #PANDOC=~/.cabal/bin/pandoc $(PDOPTS)
-PANDOC=pandoc $(PDOPTS)
+PANDOC=pandoc
+PANDOC_WITH_OPTIONS=$(PANDOC) $(PDOPTS)
 
 all: $(L).html $(L)-slides.html
 .PHONY: all echo
 
 $(L).html: $(L).md
 	@test -f $<
-	$(PANDOC) -s -t html --mathjax -o $(DESTDIR)/$@ $<
+	$(PANDOC_WITH_OPTIONS) -s -t html --mathjax -o $(DESTDIR)/$@ $<
 
 $(L)-slides.html: $(L).md Makefile $(wildcard ./pandoc/slidy/*)
 	@test -f $<
-	$(PANDOC) -s -t slidy -o $(DESTDIR)/$@ $<
+	$(PANDOC_WITH_OPTIONS) -s -t slidy -o $(DESTDIR)/$@ $<
 
 echo: 
 	echo $(MDFILE)
