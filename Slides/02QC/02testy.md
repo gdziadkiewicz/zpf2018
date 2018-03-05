@@ -1,6 +1,8 @@
-% Zaawansowane programowanie funkcyjne
-% Marcin Benke
-% 6 marca 2018
+---
+title: Zaawansowane programowanie funkcyjne
+author:  Marcin Benke
+date: 6 marca 2018
+---
 
 <meta name="duration" content="80" />
 
@@ -51,6 +53,18 @@ mkName :: [String] -> NameStyle -> String -> String
 mkName reserved style s = ...
 ```
 
+# Dygresja - Haddock
+
+Haddock (<http://haskell.org/haddock>) jest standardowym narzedziem do dokuentowania kodu w Haskellu
+
+Sekwencja "`-- |`" (spacja jest istotna) rozpoczyna blok komentarzy, który trafia do dokumentacji
+
+``` haskell
+-- |The 'square' function squares an integer.
+-- It takes one argument, of type 'Int'.
+square :: Int -> Int
+square x = x * x
+```
 
 # HUnit
 
@@ -221,7 +235,6 @@ Dla uproszczenia najpierw przyjrzyjmy się starszej wersji
 Główne składniki
 
 ~~~~ {.haskell}
-
 quickCheck  :: Testable a => a -> IO ()
 quickCheck   = check quick
 
@@ -239,6 +252,8 @@ instance (Arbitrary a, Show a, Testable b) => Testable (a -> b) where
 
 class Arbitrary a where
   arbitrary   :: Gen a
+
+instance Monad Gen where ...
 ~~~~
 
 # Generacja liczb losowych
@@ -340,9 +355,11 @@ newtype Gen a = Gen (Int -> StdGen -> a)
 chooseInt1 :: (Int,Int) -> Gen Int
 chooseInt1 bounds = Gen $ \n r  -> fst (randomR bounds r)
 
+-- | `sized` tworzy generator z rodziny generatorów indeksowanej rozmiarem
 sized :: (Int -> Gen a) -> Gen a
 sized fgen = Gen (\n r -> let Gen m = fgen n in m n r)
 
+-- | `resize` tworzy generator stałego rozmiaru
 resize :: Int -> Gen a -> Gen a
 resize n (Gen m) = Gen (\_ r -> m n r)
 ~~~~
@@ -487,6 +504,7 @@ tests gen rnd0 ntest nfail
 # forAll
 
 ~~~~ {.haskell}
+-- | `evaluate` oblicza generator z instancji Testable
 evaluate :: Testable a => a -> Gen Result
 evaluate a = gen where Prop gen = property a 
                        
@@ -499,7 +517,7 @@ forAll gen body = Prop $
   argument a res = res{ arguments = show a : arguments res }
 
 
-propAddCom1 :: Property
+propAddCom1, propAddCom2 :: Property
 propAddCom1 =  forAll (chooseInt (-100,100)) (\x -> x + 1 == 1 + x)
 propAddCom2 =  forAll int (\x -> forAll int (\y -> x + y == y + x)) where
   int = chooseInt (-100,100)
@@ -530,7 +548,7 @@ Jeszcze implikacja: jeśli p to q
 ~~~~ {.haskell}
 (==>) :: Testable a => Bool -> a -> Property
 True  ==> a = property a
-False ==> a = property ()
+False ==> a = property () -- nieadekwatne dane
 
 propMul1 :: Int -> Property
 propMul1 x = (x>0) ==> (2*x > 0) 
@@ -557,6 +575,7 @@ Potrafimy testować funkcje, ale czy potrafimy wygenerować losową funkcję?
 Zauważmy, że
 
 ~~~~ {.haskell}
+Gen a ~ (Int -> StdGen -> a)
 Gen(a -> b) ~ (Int -> StdGen -> a -> b) ~ (a -> Gen b)
 ~~~~
 
