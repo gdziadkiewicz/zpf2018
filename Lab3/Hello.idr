@@ -72,6 +72,56 @@ multMatrix [] _ = []
 multMatrix (y::ys) xs = (map (\x => sum (zipWith (*) x y)) xss) :: multMatrix ys xs
     where xss = transpose_mat xs
 
-multMatrix2 : Num a => Vect m (Vect n a) -> Vect n (Vect p a) -> Vect m (Vect p a)
-multMatrix2 [] _ = []
-multMatrix2 ys xs = map (\y => (map (\x => sum (zipWith (*) x y)) (transpose_mat xs)) ys
+--multMatrix2 : Num a => Vect m (Vect n a) -> Vect n (Vect p a) -> Vect m (Vect p a)
+--multMatrix2 [] _ = []
+--multMatrix2 ys xs = map (\y => (map (\x => sum (zipWith (*) x y)) (transpose_mat xs)) ys
+
+--3. Obejrzyj typ Fin i funkcje integerToFin i index
+ 
+--(:module Data.Vect, :doc Fin, :t integerToFin, :t index)
+
+--sprawdź wartości:
+
+-- integerToFin 0 4
+-- integerToFin 1 4
+-- integerToFin 2 4
+-- integerToFin 3 4
+-- integerToFin 4 4
+
+-- Napisz funkcje:
+
+--a) tryIndex : Integer -> Vect n a -> Maybe a
+tryIndex : Integer -> Vect n a -> Maybe a
+tryIndex {n} i xs =
+    case integerToFin i n of
+    Nothig => Nothing
+    Just i => Just (index i xs)
+ 
+tryIndex2 : Integer -> Vect n a -> Maybe a
+tryIndex2 {n} i xs = map (flip index xs) (integerToFin i n) 
+--b) odpowiednik take dla list
+mytake : (n : Nat) -> (xs : List a) -> List a
+mytake i [] = []
+mytake Z _ = []
+mytake (S n) (x::xs) = x :: (take n xs)  
+
+--c) sumEntries : Num a => (pos : Integer) -> Vect n a -> Vect n a -> Maybe a
+sumEntries : Num a => (pos : Integer) -> Vect n a -> Vect n a -> Maybe a
+sumEntries {n} pos xs ys =
+    map (flip index zs) (integerToFin pos n)
+    where zs = zipWith (+) xs ys
+
+-- 5. Zdefiniuj wectory używając zagnieżdżonych krotek, tak żeby
+
+TupleVect : Nat -> Type -> Type
+TupleVect Z ty = ()
+TupleVect (S k) ty = (ty, TupleVect k ty)
+
+test : TupleVect 4 Nat
+test = (1,2,3,4,())
+
+total appendTV : TupleVect n elem -> TupleVect m elem -> TupleVect (n+m) elem
+appendTV {n=Z} () ys = ys
+appendTV {n=S k} (e,r) ys = (e, appendTV r ys)    
+
+
